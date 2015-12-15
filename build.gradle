@@ -7,5 +7,10 @@ task wrapper(type: Wrapper) {
 model {
 	components {
 		hello(NativeLibrarySpec)
+		main(NativeExecutableSpec) {
+			binaries.all {
+				lib library: 'hello', linkage: 'static'
+			}
+		}
 	}
 }
