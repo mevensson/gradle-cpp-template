@@ -1,3 +1,4 @@
+#ifndef TEST
 #include "Hello.hh"
 
 int main(int argc, char** argv) {
@@ -5,3 +6,4 @@ int main(int argc, char** argv) {
 	hello.sayHello();
 	return 0;
 }
+#endif

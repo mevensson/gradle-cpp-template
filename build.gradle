@@ -26,6 +26,7 @@ model {
 			lib library: 'googleTest', linkage: 'static'
 
 			if (targetPlatform.operatingSystem.linux) {
+				cppCompiler.define "TEST"
 				linker.args '-pthread'
 			}
 		}
