@@ -3,8 +3,6 @@ plugins {
 }
 import de.undercouch.gradle.tasks.download.Download
 
-apply plugin: 'cpp'
-
 task wrapper(type: Wrapper) {
    gradleVersion = '2.9'
 }
@@ -14,20 +12,41 @@ task downloadGoogleTest(type: Download) {
 	dest file('build/3pp/googletest-1.7.0.zip')
 }
 
-task unzipGoogleTest(dependsOn: downloadGoogleTest,type: Copy) {
+task unzipGoogleTest(dependsOn: downloadGoogleTest, type: Copy) {
 	from zipTree(downloadGoogleTest.dest)
 	into file('build/3pp')
 }
 
+apply plugin: 'cpp'
+apply plugin: 'google-test'
+
 model {
+	binaries {
+		withType(GoogleTestTestSuiteBinarySpec) {
+			lib library: 'googleTest', linkage: 'static'
+
+			if (targetPlatform.operatingSystem.linux) {
+				linker.args '-pthread'
+			}
+		}
+		withType(SharedLibraryBinarySpec) {
+			buildable = false
+		}
+		all {
+			println "name=${name} buildable=${buildable}"
+		}
+	}
+
 	components {
-		googletest(NativeLibrarySpec) {
+		googleTest(NativeLibrarySpec) {
 			sources {
 				cpp {
 					builtBy tasks.unzipGoogleTest
 					source {
 						srcDir 'build/3pp/googletest-release-1.7.0'
 						include 'src/gtest-all.cc'
+						srcDir 'src/googleTest/cpp'
+						include 'main.cc'
 					}
 					exportedHeaders {
 						srcDir 'build/3pp/googletest-release-1.7.0'
@@ -40,6 +59,20 @@ model {
 		main(NativeExecutableSpec) {
 			binaries.all {
 				lib library: 'hello', linkage: 'static'
+			}
+		}
+	}
+
+	testSuites {
+		googleTestTest {
+			binaries.all {
+				buildable = false
+			}
+		}
+		helloTest
+		mainTest {
+			binaries.all {
+				buildable = false
 			}
 		}
 	}
