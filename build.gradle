@@ -1,11 +1,41 @@
+plugins {
+	id 'de.undercouch.download' version '2.1.0'
+}
+import de.undercouch.gradle.tasks.download.Download
+
 apply plugin: 'cpp'
 
 task wrapper(type: Wrapper) {
    gradleVersion = '2.9'
 }
 
+task downloadGoogleTest(type: Download) {
+	src 'https://github.com/google/googletest/archive/release-1.7.0.zip'
+	dest file('build/3pp/googletest-1.7.0.zip')
+}
+
+task unzipGoogleTest(dependsOn: downloadGoogleTest,type: Copy) {
+	from zipTree(downloadGoogleTest.dest)
+	into file('build/3pp')
+}
+
 model {
 	components {
+		googletest(NativeLibrarySpec) {
+			sources {
+				cpp {
+					builtBy tasks.unzipGoogleTest
+					source {
+						srcDir 'build/3pp/googletest-release-1.7.0'
+						include 'src/gtest-all.cc'
+					}
+					exportedHeaders {
+						srcDir 'build/3pp/googletest-release-1.7.0'
+						srcDir 'build/3pp/googletest-release-1.7.0/include'
+					}
+				}
+			}
+		}
 		hello(NativeLibrarySpec)
 		main(NativeExecutableSpec) {
 			binaries.all {
